@@ -45,12 +45,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/spoyner/IntentGraphGen"
+    "url": "https://github.com/spoyner/intent-graph-generator"
   },
   "bugs": {
-    "url": "https://github.com/spoyner/IntentGraphGen/issues"
+    "url": "https://github.com/spoyner/intent-graph-generator/issues"
   },
-  "homepage": "https://github.com/spoyner/IntentGraphGen#readme",
+  "homepage": "https://github.com/spoyner/intent-graph-generator#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4"
   },

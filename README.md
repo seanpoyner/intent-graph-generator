@@ -126,8 +126,8 @@ This installs the server globally, making it available system-wide.
 
 ```bash
 # Clone the repository
-git clone https://github.com/spoyner/IntentGraphGen.git
-cd IntentGraphGen
+git clone https://github.com/spoyner/intent-graph-generator.git
+cd intent-graph-generator
 
 # Install dependencies
 npm install
@@ -164,7 +164,7 @@ npm run build
   "mcpServers": {
     "intent-graph": {
       "command": "node",
-      "args": ["/absolute/path/to/IntentGraphGen/build/index.js"]
+      "args": ["/absolute/path/to/intent-graph-generator/build/index.js"]
     }
   }
 }
@@ -431,7 +431,7 @@ All tools follow strict JSON schemas. See tool definitions in `src/index.ts` for
 ## Project Structure
 
 ```
-IntentGraphGen/
+intent-graph-generator/
 ├── src/
 │   ├── index.ts          # MCP server entry point
 │   ├── types.ts          # TypeScript type definitions

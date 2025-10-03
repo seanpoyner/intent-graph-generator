@@ -60,7 +60,7 @@ Be respectful, inclusive, and constructive. We're all here to build something gr
 ```powershell
 # Clone your fork
 git clone https://github.com/YOUR_USERNAME/intent-graph-generator.git
-cd IntentGraphGen
+cd intent-graph-generator
 
 # Install dependencies
 npm install

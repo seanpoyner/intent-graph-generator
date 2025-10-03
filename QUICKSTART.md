@@ -19,8 +19,8 @@ npm install -g intent-graph-mcp-server
 ### Option 2: Install from source
 
 ```bash
-git clone https://github.com/spoyner/IntentGraphGen.git
-cd IntentGraphGen
+git clone https://github.com/spoyner/intent-graph-generator.git
+cd intent-graph-generator
 npm install
 npm run build
 ```
@@ -54,7 +54,7 @@ npm run build
   "mcpServers": {
     "intent-graph": {
       "command": "node",
-      "args": ["/absolute/path/to/IntentGraphGen/build/index.js"]
+      "args": ["/absolute/path/to/intent-graph-generator/build/index.js"]
     }
   }
 }
@@ -337,7 +337,7 @@ npx intent-graph-mcp-server
 - 🔧 **intent_graph_schema_v1.json** - Schema reference
 
 ### Contribute
-- 🐛 Report bugs: [GitHub Issues](https://github.com/spoyner/IntentGraphGen/issues)
+- 🐛 Report bugs: [GitHub Issues](https://github.com/spoyner/intent-graph-generator/issues)
 - 💡 Suggest features
 - 🤝 Contribute code: See [CONTRIBUTING.md](CONTRIBUTING.md)
 
@@ -362,7 +362,7 @@ Check `intent_graph_examples.md` for:
 
 - **Documentation:** This guide + README.md
 - **Schema:** intent_graph_schema_v1.json
-- **Issues:** https://github.com/spoyner/IntentGraphGen/issues
+- **Issues:** https://github.com/spoyner/intent-graph-generator/issues
 - **Contact:** Sean Poyner <sean.poyner@pm.me>
 
 ---

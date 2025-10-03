@@ -1,4 +1,4 @@
-# IntentGraphGen Examples
+# Intent Graph Generator - Examples
 
 ## Example 1: Simple Sequential Workflow
 **Use Case:** Customer order processing with validation, inventory check, and payment.
