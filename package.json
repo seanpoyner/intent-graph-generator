@@ -1,0 +1,65 @@
+{
+  "name": "intent-graph-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for Intent Graph generation with composable tools",
+  "type": "module",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "files": [
+    "build/**/*.js",
+    "build/**/*.d.ts",
+    "!build/test.js",
+    "!build/test.d.ts",
+    "!build/test-utils.js",
+    "!build/test-utils.d.ts",
+    "README.md",
+    "LICENSE",
+    "QUICKSTART.md",
+    "CONTRIBUTING.md",
+    "config.example.json",
+    "intent_graph_schema_v1.json",
+    "intent_graph_examples.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "node build/index.js",
+    "dev": "tsc && node build/index.js",
+    "prepare": "npm run build",
+    "watch": "tsc --watch",
+    "test": "tsc && node build/test.js",
+    "test:watch": "tsc --watch & node --watch build/test.js"
+  },
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "intent-graph",
+    "agent-orchestration",
+    "ai-agents",
+    "workflow-automation",
+    "graph-builder",
+    "cursor",
+    "claude"
+  ],
+  "author": "Sean Poyner <sean.poyner@pm.me>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/spoyner/IntentGraphGen"
+  },
+  "bugs": {
+    "url": "https://github.com/spoyner/IntentGraphGen/issues"
+  },
+  "homepage": "https://github.com/spoyner/IntentGraphGen#readme",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+

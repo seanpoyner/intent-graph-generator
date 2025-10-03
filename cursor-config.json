@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "intent-graph": {
+      "command": "node",
+      "args": [
+        "C:\\Users\\seanp\\projects\\IntentGraphGen\\build\\index.js"
+      ],
+      "env": {},
+      "disabled": false
+    }
+  }
+}
+
