@@ -49,3 +49,8 @@ node_modules/
 *.map
 build/**/*.map
 NPM_PUBLISH.md
+PUBLISH_CHECKLIST.md
+PUBLISH_COMMANDS.ps1
+TEST_SUMMARY.md
+TESTING.md
+GITHUB_SETUP.md
