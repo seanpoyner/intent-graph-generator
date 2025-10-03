@@ -15,12 +15,35 @@
 
 ## 🚀 Quick Start
 
+### **For Copilot Studio / Power Platform (Recommended)**
+
+**1-Command Azure Deployment:**
+
+```powershell
+# Clone and deploy
+git clone https://github.com/spoyner/intent-graph-generator
+cd intent-graph-generator
+npm install
+.\deploy-to-azure.ps1 -LLM_API_KEY "your-writer-api-key"
+```
+
+✅ Automatically creates Azure Function  
+✅ Gives you the URL for Copilot Studio  
+✅ Fully integrated with Microsoft ecosystem  
+
+**See:** [`AZURE-DEPLOYMENT.md`](AZURE-DEPLOYMENT.md) | [`COPILOT-STUDIO-SETUP.md`](COPILOT-STUDIO-SETUP.md)
+
+---
+
+### **For Other Platforms**
+
 ```bash
 # Install from npm
 npm install -g intent-graph-mcp-server
 
-# Set your Writer API key
-export WRITER_API_KEY="your-api-key-here"
+# Set your LLM API key
+export LLM_API_KEY="your-api-key-here"
+export LLM_MODEL="palmyra-x5"  # or gpt-4, claude-3-5-sonnet-20241022, etc.
 
 # Use in your orchestration agent
 # The agent calls the MCP server tools to generate intent graphs
