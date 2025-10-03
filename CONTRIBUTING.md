@@ -57,7 +57,7 @@ Be respectful, inclusive, and constructive. We're all here to build something gr
 
 ## Development Setup
 
-```powershell
+```bash
 # Clone your fork
 git clone https://github.com/YOUR_USERNAME/intent-graph-generator.git
 cd intent-graph-generator
@@ -67,6 +67,16 @@ npm install
 
 # Build the project
 npm run build
+
+# Set up LLM API key for testing (choose your provider)
+export LLM_API_KEY="your-api-key"
+export LLM_MODEL="palmyra-x5"  # or claude-3-5-sonnet-20241022, gpt-4, etc.
+export LLM_BASE_URL="https://api.writer.com"
+
+# Or use legacy/provider-specific variables (fallback)
+export WRITER_API_KEY="your-key"
+export OPENAI_API_KEY="your-key"
+export ANTHROPIC_API_KEY="your-key"
 
 # Run tests
 npm test
@@ -100,19 +110,39 @@ npm start
 - Aim for high code coverage
 - Test both success and error cases
 
+**V2.0 Architecture:**
+- Primary tool: `generate_intent_graph` (LLM-powered)
+- Helper tools: `validate_graph`, `analyze_graph`, `optimize_graph`, `export_graph`, `visualize_graph`, `generate_artifacts`
+- All tests in `src/test-v2.ts`
+
 **Test structure:**
 ```typescript
-await runner.run('tool_name - scenario', () => {
+await runTest('tool_name: scenario', async () => {
   // Arrange
-  const input = { /* test data */ };
+  const input = { orchestration_card: { /* ... */ }, options: { /* ... */ } };
   
   // Act
-  const response = tools.someFunction(input);
+  const result = await generateIntentGraphTool(input);
   
   // Assert
-  assertSuccess(response);
-  // ... more assertions
+  assert(result.success === true, 'Should succeed');
+  if (!result.success) return;
+  
+  assert(result.result.intent_graph !== undefined, 'Should return graph');
+  assert(result.result.intent_graph.nodes.length > 0, 'Should have nodes');
 });
+```
+
+**Running Tests:**
+```bash
+# All tests
+npm test
+
+# Watch mode
+npm run test:watch
+
+# With specific LLM provider
+LLM_API_KEY="your-key" LLM_MODEL="gpt-4" npm test
 ```
 
 ## Documentation

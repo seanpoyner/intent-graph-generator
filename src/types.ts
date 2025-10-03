@@ -272,3 +272,127 @@ export type OptimizationStrategy = "parallelization" | "cost_reduction" | "laten
 // Export Format
 export type ExportFormat = "json" | "yaml" | "dot" | "mermaid";
 
+// =============== V2 Orchestration Types ===============
+
+export interface OrchestrationUserRequest {
+  description: string;
+  domain?: string;
+  success_criteria?: string[];
+  input_data?: Record<string, unknown>;
+  expected_output?: Record<string, unknown>;
+}
+
+export interface OrchestrationAgent {
+  name: string;
+  type: AgentType;
+  capabilities: string[];
+  input_schema: Record<string, unknown>;
+  output_schema: Record<string, unknown>;
+  description?: string;
+  estimated_latency_ms?: number;
+  cost_per_call?: number;
+  reliability_score?: number;
+  dependencies?: string[];
+  metadata?: Record<string, unknown>;
+}
+
+export interface OrchestrationMcpServerTool {
+  name: string;
+  description?: string;
+  input_schema?: Record<string, unknown>;
+  output_schema?: Record<string, unknown>;
+}
+
+export interface OrchestrationMcpServer {
+  name: string;
+  url?: string;
+  tools: OrchestrationMcpServerTool[];
+  authentication?: "none" | "api_key" | "oauth" | "custom";
+}
+
+export interface OrchestrationExternalTool {
+  name: string;
+  type: "notification" | "database" | "api" | "file" | "calculation" | "custom";
+  description?: string;
+  input_schema: Record<string, unknown>;
+  output_schema: Record<string, unknown>;
+  estimated_latency_ms?: number;
+  cost_per_call?: number;
+}
+
+export interface OrchestrationConstraints {
+  max_iterations?: number;
+  max_parallel_nodes?: number;
+  timeout_ms?: number;
+  budget_limit?: number;
+  required_validation?: boolean;
+  error_handling_strategy?: "fail_fast" | "retry" | "fallback" | "retry_with_fallback" | "continue";
+  max_retries?: number;
+  allowed_agent_types?: AgentType[];
+}
+
+export interface OrchestrationContext {
+  environment?: "development" | "staging" | "production";
+  user_id?: string;
+  session_id?: string;
+  request_id?: string;
+  timestamp?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface OrchestrationPreferences {
+  optimize_for?: "speed" | "cost" | "reliability" | "balanced";
+  parallelization?: "none" | "conservative" | "balanced" | "aggressive";
+  logging_level?: "minimal" | "normal" | "verbose" | "debug";
+  include_monitoring?: boolean;
+  include_rollback?: boolean;
+  cache_intermediate_results?: boolean;
+}
+
+export interface OrchestrationExampleScenario {
+  scenario?: string;
+  input?: Record<string, unknown>;
+  expected_flow?: string[];
+  expected_output?: Record<string, unknown>;
+}
+
+export interface OrchestrationCard {
+  user_request: OrchestrationUserRequest;
+  available_agents: OrchestrationAgent[];
+  available_mcp_servers?: OrchestrationMcpServer[];
+  available_tools?: OrchestrationExternalTool[];
+  constraints?: OrchestrationConstraints;
+  context?: OrchestrationContext;
+  preferences?: OrchestrationPreferences;
+  special_requirements?: string[];
+  example_scenarios?: OrchestrationExampleScenario[];
+}
+
+export interface GenerationOptions {
+  include_artifacts?: boolean;
+  artifact_types?: string[];
+  format?: "json" | "yaml";
+  validate?: boolean;
+  optimize?: boolean;
+}
+
+export interface GenerationArtifacts {
+  reasoning?: string;
+  alternatives?: Array<Record<string, unknown>>;
+  optimizations?: Array<Record<string, unknown>>;
+  warnings?: Warning[];
+}
+
+export interface GenerateIntentGraphOutput {
+  intent_graph: IntentGraph;
+  metadata: {
+    generation_timestamp: string;
+    llm_model_used?: string;
+    generation_time_ms?: number;
+    complexity_score?: number;
+    estimated_execution_time_ms?: number;
+    estimated_cost?: number;
+  };
+  artifacts?: GenerationArtifacts;
+  validation?: ValidationResult;
+}

@@ -1,7 +1,7 @@
 {
   "name": "intent-graph-mcp-server",
-  "version": "1.0.0",
-  "description": "MCP server for Intent Graph generation with composable tools",
+  "version": "2.0.0",
+  "description": "Universal LLM-powered MCP server for automated Intent Graph generation (Writer Palmyra, Claude, OpenAI, custom)",
   "type": "module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -12,13 +12,17 @@
     "!build/test.d.ts",
     "!build/test-utils.js",
     "!build/test-utils.d.ts",
+    "!build/storage.js",
+    "!build/storage.d.ts",
+    "!build/tools.js",
+    "!build/tools.d.ts",
     "README.md",
     "LICENSE",
-    "QUICKSTART.md",
+    "ARCHITECTURE_V2.md",
     "CONTRIBUTING.md",
-    "config.example.json",
-    "intent_graph_schema_v1.json",
-    "intent_graph_examples.md"
+    "OPEN_SOURCE.md",
+    "schemas/",
+    "examples/"
   ],
   "scripts": {
     "build": "tsc",
@@ -26,8 +30,7 @@
     "dev": "tsc && node build/index.js",
     "prepare": "npm run build",
     "watch": "tsc --watch",
-    "test": "tsc && node build/test.js",
-    "test:watch": "tsc --watch & node --watch build/test.js"
+    "test": "tsc && node build/test-v2.js"
   },
   "keywords": [
     "mcp",
@@ -39,7 +42,11 @@
     "workflow-automation",
     "graph-builder",
     "cursor",
-    "claude"
+    "claude",
+    "palmyra",
+    "writer-ai",
+    "llm-powered",
+    "orchestration-card"
   ],
   "author": "Sean Poyner <sean.poyner@pm.me>",
   "license": "MIT",
@@ -62,4 +69,3 @@
     "node": ">=18.0.0"
   }
 }
-

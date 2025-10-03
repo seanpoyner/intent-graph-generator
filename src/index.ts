@@ -17,14 +17,12 @@ import {
   McpError
 } from '@modelcontextprotocol/sdk/types.js';
 
-import * as tools from './tools.js';
-import type { AgentDefinition, GraphConfig, NodeConfig, EdgeConfig } from './types.js';
 
 // Initialize MCP Server
 const server = new Server(
   {
     name: 'intent-graph-mcp-server',
-    version: '1.0.0'
+    version: '2.0.0'
   },
   {
     capabilities: {
@@ -38,333 +36,126 @@ const server = new Server(
 // ============================================================================
 
 const TOOL_DEFINITIONS = [
-  // Phase 1: Graph Management
+  // V2: Generation
   {
-    name: 'create_graph',
-    description: 'Initialize a new intent graph with purpose and available agents',
+    name: 'generate_intent_graph',
+    description: 'Generate a complete intent graph from an orchestration card using Palmyra',
     inputSchema: {
       type: 'object',
       properties: {
-        purpose: {
-          type: 'string',
-          description: 'High-level objective for the graph'
-        },
-        available_agents: {
-          type: 'array',
-          description: 'List of agents that can be used in the graph',
-          items: {
-            type: 'object',
-            properties: {
-              name: { type: 'string', description: 'Agent name' },
-              type: { type: 'string', enum: ['llm', 'tool', 'api', 'validator', 'transformer', 'aggregator', 'router', 'custom'] },
-              capabilities: { type: 'array', items: { type: 'string' } },
-              input_schema: { type: 'object' },
-              output_schema: { type: 'object' }
-            },
-            required: ['name', 'type', 'capabilities', 'input_schema', 'output_schema']
-          }
-        },
-        config: {
+        orchestration_card: { type: 'object', description: 'Context for generation (see orchestration-card schema)' },
+        options: {
           type: 'object',
-          description: 'Graph configuration options',
           properties: {
-            execution_mode: { type: 'string', enum: ['sequential', 'parallel', 'hybrid', 'adaptive'] },
-            error_handling: { type: 'string', enum: ['fail', 'fallback', 'skip', 'retry'] },
-            iteration_count: { type: 'integer', minimum: 1, maximum: 10 }
+            include_artifacts: { type: 'boolean' },
+            artifact_types: { type: 'array', items: { type: 'string' } },
+            format: { type: 'string', enum: ['json', 'yaml'] },
+            validate: { type: 'boolean' },
+            optimize: { type: 'boolean' }
           }
         }
       },
-      required: ['purpose', 'available_agents']
-    }
-  },
-  {
-    name: 'get_graph',
-    description: 'Retrieve a graph by its ID',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        graph_id: { type: 'string', description: 'ID of the graph to retrieve' }
-      },
-      required: ['graph_id']
-    }
-  },
-  {
-    name: 'delete_graph',
-    description: 'Delete a graph by its ID',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        graph_id: { type: 'string', description: 'ID of the graph to delete' }
-      },
-      required: ['graph_id']
-    }
-  },
-  {
-    name: 'list_graphs',
-    description: 'List all graphs with summary information',
-    inputSchema: {
-      type: 'object',
-      properties: {}
+      required: ['orchestration_card']
     }
   },
 
-  // Phase 2: Node Operations
-  {
-    name: 'add_node',
-    description: 'Add a node to the graph representing an agent execution',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        graph_id: { type: 'string', description: 'ID of the graph to modify' },
-        agent_name: { type: 'string', description: 'Name of agent (must be in available_agents)' },
-        node_config: {
-          type: 'object',
-          properties: {
-            node_type: { type: 'string', enum: ['entry', 'processing', 'decision', 'aggregation', 'exit', 'error_handler'] },
-            purpose: { type: 'string', description: 'Clear description of node\'s objective' },
-            inputs: { type: 'object', description: 'Input parameter mappings' },
-            configuration: {
-              type: 'object',
-              properties: {
-                timeout_ms: { type: 'integer', minimum: 100, maximum: 300000 },
-                retry_policy: {
-                  type: 'object',
-                  properties: {
-                    max_attempts: { type: 'integer', minimum: 1, maximum: 5 },
-                    backoff_strategy: { type: 'string', enum: ['fixed', 'exponential', 'linear'] },
-                    backoff_ms: { type: 'integer', minimum: 100 }
-                  }
-                }
-              }
-            },
-            error_handling: {
-              type: 'object',
-              properties: {
-                strategy: { type: 'string', enum: ['fail', 'fallback', 'skip', 'retry'] },
-                fallback_node: { type: 'string' },
-                error_output: { type: 'string' }
-              }
-            },
-            metadata: {
-              type: 'object',
-              properties: {
-                estimated_duration_ms: { type: 'integer' },
-                cost_estimate: { type: 'number' },
-                priority: { type: 'string', enum: ['low', 'normal', 'high', 'critical'] },
-                tags: { type: 'array', items: { type: 'string' } }
-              }
-            }
-          },
-          required: ['node_type', 'purpose']
-        }
-      },
-      required: ['graph_id', 'agent_name', 'node_config']
-    }
-  },
-  {
-    name: 'update_node',
-    description: 'Update an existing node in the graph',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        graph_id: { type: 'string', description: 'ID of the graph' },
-        node_id: { type: 'string', description: 'ID of the node to update' },
-        updates: {
-          type: 'object',
-          description: 'Fields to update',
-          properties: {
-            purpose: { type: 'string' },
-            node_type: { type: 'string', enum: ['entry', 'processing', 'decision', 'aggregation', 'exit', 'error_handler'] },
-            inputs: { type: 'object' },
-            configuration: { type: 'object' },
-            error_handling: { type: 'object' },
-            metadata: { type: 'object' }
-          }
-        }
-      },
-      required: ['graph_id', 'node_id', 'updates']
-    }
-  },
-  {
-    name: 'remove_node',
-    description: 'Remove a node from the graph (also removes connected edges)',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        graph_id: { type: 'string', description: 'ID of the graph' },
-        node_id: { type: 'string', description: 'ID of the node to remove' }
-      },
-      required: ['graph_id', 'node_id']
-    }
-  },
-  {
-    name: 'list_nodes',
-    description: 'List all nodes in a graph',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        graph_id: { type: 'string', description: 'ID of the graph' }
-      },
-      required: ['graph_id']
-    }
-  },
-
-  // Phase 2: Edge Operations
-  {
-    name: 'add_edge',
-    description: 'Create an edge connecting two nodes',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        graph_id: { type: 'string', description: 'ID of the graph' },
-        from_node: { type: 'string', description: 'Source node ID' },
-        to_node: { type: 'string', description: 'Target node ID' },
-        edge_config: {
-          type: 'object',
-          properties: {
-            edge_type: { type: 'string', enum: ['sequential', 'parallel', 'conditional', 'fallback', 'retry', 'iteration'] },
-            condition: {
-              type: 'object',
-              properties: {
-                expression: { type: 'string', description: 'Boolean expression to evaluate' },
-                evaluation_context: { type: 'string', enum: ['node_output', 'global_context', 'both'] }
-              }
-            },
-            priority: { type: 'integer', description: 'Execution priority when multiple edges available' },
-            data_mapping: { type: 'object', description: 'Explicit data transformations between nodes' }
-          }
-        }
-      },
-      required: ['graph_id', 'from_node', 'to_node']
-    }
-  },
-  {
-    name: 'update_edge',
-    description: 'Update an existing edge in the graph',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        graph_id: { type: 'string', description: 'ID of the graph' },
-        edge_id: { type: 'string', description: 'ID of the edge to update' },
-        updates: {
-          type: 'object',
-          description: 'Fields to update',
-          properties: {
-            edge_type: { type: 'string', enum: ['sequential', 'parallel', 'conditional', 'fallback', 'retry', 'iteration'] },
-            condition: { type: 'object' },
-            priority: { type: 'integer' },
-            data_mapping: { type: 'object' }
-          }
-        }
-      },
-      required: ['graph_id', 'edge_id', 'updates']
-    }
-  },
-  {
-    name: 'remove_edge',
-    description: 'Remove an edge from the graph',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        graph_id: { type: 'string', description: 'ID of the graph' },
-        edge_id: { type: 'string', description: 'ID of the edge to remove' }
-      },
-      required: ['graph_id', 'edge_id']
-    }
-  },
-  {
-    name: 'list_edges',
-    description: 'List all edges in a graph',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        graph_id: { type: 'string', description: 'ID of the graph' }
-      },
-      required: ['graph_id']
-    }
-  },
-
-  // Phase 3: Validation & Analysis
+  // V2: Validation
   {
     name: 'validate_graph',
-    description: 'Validate graph structure and return detailed report',
+    description: 'Validate a generated intent graph structure and return detailed report',
     inputSchema: {
       type: 'object',
       properties: {
-        graph_id: { type: 'string', description: 'ID of the graph to validate' }
+        graph: { type: 'object', description: 'The intent graph to validate' }
       },
-      required: ['graph_id']
-    }
-  },
-  {
-    name: 'analyze_complexity',
-    description: 'Calculate complexity metrics for the graph',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        graph_id: { type: 'string', description: 'ID of the graph to analyze' }
-      },
-      required: ['graph_id']
-    }
-  },
-  {
-    name: 'find_parallel_opportunities',
-    description: 'Find opportunities for parallel execution in the graph',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        graph_id: { type: 'string', description: 'ID of the graph to analyze' }
-      },
-      required: ['graph_id']
-    }
-  },
-  {
-    name: 'calculate_critical_path',
-    description: 'Calculate the critical path (longest path) through the graph',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        graph_id: { type: 'string', description: 'ID of the graph to analyze' }
-      },
-      required: ['graph_id']
+      required: ['graph']
     }
   },
 
-  // Phase 4: Optimization
+  // V2: Analysis
   {
-    name: 'suggest_improvements',
-    description: 'Analyze graph and suggest improvements for optimization',
+    name: 'analyze_graph',
+    description: 'Analyze graph complexity, metrics, and identify optimization opportunities',
     inputSchema: {
       type: 'object',
       properties: {
-        graph_id: { type: 'string', description: 'ID of the graph to analyze' }
+        graph: { type: 'object', description: 'The intent graph to analyze' },
+        analysis_types: {
+          type: 'array',
+          items: { type: 'string', enum: ['complexity', 'parallel_opportunities', 'critical_path', 'bottlenecks'] },
+          description: 'Types of analysis to perform (default: all)'
+        }
       },
-      required: ['graph_id']
+      required: ['graph']
     }
   },
 
-  // Phase 5: Export & Visualization
+  // V2: Optimization
+  {
+    name: 'optimize_graph',
+    description: 'Optimize an intent graph by applying improvements and restructuring',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        graph: { type: 'object', description: 'The intent graph to optimize' },
+        optimization_strategies: {
+          type: 'array',
+          items: { type: 'string', enum: ['parallelize', 'reduce_latency', 'minimize_cost', 'improve_reliability'] },
+          description: 'Optimization strategies to apply (default: all applicable)'
+        }
+      },
+      required: ['graph']
+    }
+  },
+
+  // V2: Export & Visualization
   {
     name: 'export_graph',
-    description: 'Export graph in various formats (json, yaml, dot, mermaid)',
+    description: 'Export an intent graph in various formats (json, yaml, dot, mermaid)',
     inputSchema: {
       type: 'object',
       properties: {
-        graph_id: { type: 'string', description: 'ID of the graph to export' },
+        graph: { type: 'object', description: 'The intent graph to export' },
         format: { type: 'string', enum: ['json', 'yaml', 'dot', 'mermaid'], default: 'json' }
       },
-      required: ['graph_id']
+      required: ['graph']
     }
   },
   {
     name: 'visualize_graph',
-    description: 'Generate Mermaid diagram for graph visualization',
+    description: 'Generate Mermaid diagram for intent graph visualization',
     inputSchema: {
       type: 'object',
       properties: {
-        graph_id: { type: 'string', description: 'ID of the graph to visualize' }
+        graph: { type: 'object', description: 'The intent graph to visualize' },
+        options: {
+          type: 'object',
+          properties: {
+            direction: { type: 'string', enum: ['TB', 'LR'], default: 'TB', description: 'Diagram direction (Top-Bottom or Left-Right)' },
+            include_metadata: { type: 'boolean', default: false, description: 'Include node metadata in diagram' }
+          }
+        }
       },
-      required: ['graph_id']
+      required: ['graph']
+    }
+  },
+
+  // V2: Artifacts
+  {
+    name: 'generate_artifacts',
+    description: 'Generate debugging and logging artifacts for a graph generation session',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        graph: { type: 'object', description: 'The generated intent graph' },
+        orchestration_card: { type: 'object', description: 'The orchestration card used for generation' },
+        artifact_types: {
+          type: 'array',
+          items: { type: 'string', enum: ['reasoning', 'alternatives', 'optimizations', 'execution_trace', 'debug_info'] },
+          description: 'Types of artifacts to generate (default: all)'
+        }
+      },
+      required: ['graph', 'orchestration_card']
     }
   }
 ];
@@ -395,116 +186,60 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     let response;
 
     switch (name) {
-      // Phase 1: Graph Management
-      case 'create_graph':
-        response = tools.createGraph(
-          args.purpose as string,
-          args.available_agents as AgentDefinition[],
-          args.config as GraphConfig
-        );
+      // V2: Generation
+      case 'generate_intent_graph':
+        response = await (await import('./tools/generate.js')).generateIntentGraphTool({
+          orchestration_card: args.orchestration_card as any,
+          options: args.options as any
+        });
         break;
 
-      case 'get_graph':
-        response = tools.getGraph(args.graph_id as string);
-        break;
-
-      case 'delete_graph':
-        response = tools.deleteGraph(args.graph_id as string);
-        break;
-
-      case 'list_graphs':
-        response = tools.listGraphs();
-        break;
-
-      // Phase 2: Node Operations
-      case 'add_node':
-        response = tools.addNode(
-          args.graph_id as string,
-          args.agent_name as string,
-          args.node_config as NodeConfig
-        );
-        break;
-
-      case 'update_node':
-        response = tools.updateNode(
-          args.graph_id as string,
-          args.node_id as string,
-          args.updates as Partial<NodeConfig>
-        );
-        break;
-
-      case 'remove_node':
-        response = tools.removeNode(
-          args.graph_id as string,
-          args.node_id as string
-        );
-        break;
-
-      case 'list_nodes':
-        response = tools.listNodes(args.graph_id as string);
-        break;
-
-      // Phase 2: Edge Operations
-      case 'add_edge':
-        response = tools.addEdge(
-          args.graph_id as string,
-          args.from_node as string,
-          args.to_node as string,
-          args.edge_config as EdgeConfig
-        );
-        break;
-
-      case 'update_edge':
-        response = tools.updateEdge(
-          args.graph_id as string,
-          args.edge_id as string,
-          args.updates as Partial<EdgeConfig>
-        );
-        break;
-
-      case 'remove_edge':
-        response = tools.removeEdge(
-          args.graph_id as string,
-          args.edge_id as string
-        );
-        break;
-
-      case 'list_edges':
-        response = tools.listEdges(args.graph_id as string);
-        break;
-
-      // Phase 3: Validation & Analysis
+      // V2: Validation
       case 'validate_graph':
-        response = tools.validateGraphTool(args.graph_id as string);
+        response = await (await import('./tools/helpers.js')).validateGraphTool({
+          graph: args.graph as any
+        });
         break;
 
-      case 'analyze_complexity':
-        response = tools.analyzeComplexity(args.graph_id as string);
+      // V2: Analysis
+      case 'analyze_graph':
+        response = await (await import('./tools/helpers.js')).analyzeGraphTool({
+          graph: args.graph as any,
+          analysis_types: args.analysis_types as any
+        });
         break;
 
-      case 'find_parallel_opportunities':
-        response = tools.findParallelOpportunitiesTool(args.graph_id as string);
+      // V2: Optimization
+      case 'optimize_graph':
+        response = await (await import('./tools/helpers.js')).optimizeGraphTool({
+          graph: args.graph as any,
+          optimization_strategies: args.optimization_strategies as any
+        });
         break;
 
-      case 'calculate_critical_path':
-        response = tools.calculateCriticalPathTool(args.graph_id as string);
-        break;
-
-      // Phase 4: Optimization
-      case 'suggest_improvements':
-        response = tools.suggestImprovements(args.graph_id as string);
-        break;
-
-      // Phase 5: Export & Visualization
+      // V2: Export
       case 'export_graph':
-        response = tools.exportGraph(
-          args.graph_id as string,
-          (args.format as 'json' | 'yaml' | 'dot' | 'mermaid') || 'json'
-        );
+        response = await (await import('./tools/helpers.js')).exportGraphTool({
+          graph: args.graph as any,
+          format: args.format as any
+        });
         break;
 
+      // V2: Visualization
       case 'visualize_graph':
-        response = tools.visualizeGraph(args.graph_id as string);
+        response = await (await import('./tools/helpers.js')).visualizeGraphTool({
+          graph: args.graph as any,
+          options: args.options as any
+        });
+        break;
+
+      // V2: Artifacts
+      case 'generate_artifacts':
+        response = await (await import('./tools/helpers.js')).generateArtifactsTool({
+          graph: args.graph as any,
+          orchestration_card: args.orchestration_card as any,
+          artifact_types: args.artifact_types as any
+        });
         break;
 
       default:
@@ -556,8 +291,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 // ============================================================================
 
 async function main(): Promise<void> {
-  console.error('[MCP Server] Starting IntentGraph MCP Server v1.0.0');
-  console.error('[MCP Server] Available tools: 19');
+  console.error('[MCP Server] Starting IntentGraph MCP Server v2.0.0');
+  console.error('[MCP Server] Available tools: 7');
   console.error('[MCP Server] Transport: stdio');
 
   const transport = new StdioServerTransport();
