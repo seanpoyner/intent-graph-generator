@@ -7,7 +7,7 @@
 **Universal LLM-powered MCP server for automated Intent Graph generation**. Supports Writer Palmyra, Claude, OpenAI, and any OpenAI-compatible API. Transform orchestration requirements into executable agent workflows with AI-assisted graph construction.
 
 **Author:** Sean Poyner  
-**Version:** 2.1.0  
+**Version:** 2.2.0  
 **License:** MIT  
 **Contact:** sean.poyner@pm.me
 
@@ -15,27 +15,6 @@
 
 ## 🚀 Quick Start
 
-### **For Copilot Studio / Power Platform (Recommended)**
-
-**1-Command Azure Deployment:**
-
-```powershell
-# Clone and deploy
-git clone https://github.com/spoyner/intent-graph-generator
-cd intent-graph-generator
-npm install
-.\deploy-to-azure.ps1 -LLM_API_KEY "your-writer-api-key"
-```
-
-✅ Automatically creates Azure Function  
-✅ Gives you the URL for Copilot Studio  
-✅ Fully integrated with Microsoft ecosystem  
-
-**See:** [`AZURE-DEPLOYMENT.md`](AZURE-DEPLOYMENT.md) | [`COPILOT-STUDIO-SETUP.md`](COPILOT-STUDIO-SETUP.md)
-
----
-
-### **For Other Platforms**
 
 ```bash
 # Install from npm
@@ -55,7 +34,7 @@ export LLM_MODEL="palmyra-x5"  # or gpt-4, claude-3-5-sonnet-20241022, etc.
 
 ## Overview
 
-The IntentGraph MCP Server v2.1 is designed for **orchestration agents** that need to build agent workflows. The orchestration agent provides context in an **Orchestration Card**, and an LLM generates the complete intent graph with intelligent optimizations.
+The IntentGraph MCP Server v2.2 is designed for **orchestration agents** that need to build agent workflows. The orchestration agent provides context in an **Orchestration Card**, and an LLM generates the complete intent graph with intelligent optimizations. Provides **7 comprehensive MCP tools** for graph generation, validation, analysis, optimization, export, and visualization.
 
 **Primary Use Cases:**
 - **Microsoft Copilot Studio** - Build complex agent orchestrations
@@ -69,77 +48,82 @@ The IntentGraph MCP Server v2.1 is designed for **orchestration agents** that ne
 
 ## Why Use This?
 
-### IntentGraph v2.1 (AI-Powered with Advanced Features)
+### IntentGraph v2.2 (Complete Toolkit with 7 MCP Tools)
 ```
-✅ Single tool call generates complete graph
-✅ AI understands context and constraints
-✅ Automatically optimized structure
+✅ 7 comprehensive MCP tools (generation, validation, analysis, optimization, export, visualization, artifacts)
+✅ AI-powered graph generation with context understanding
+✅ Dual transport support (stdio + HTTP server for Copilot Studio)
+✅ 30+ comprehensive tests (100% passing)
 ✅ Flexible LLM generation modes (delegate or use configured API)
 ✅ System-configurable prompts for custom workflows
 ✅ Direct memory integration for state persistence
-✅ Fast, intelligent, reliable
-✅ Artifacts for debugging and logging
+✅ Rich Mermaid visualization with metadata
+✅ Multiple export formats (JSON, YAML, DOT, Mermaid)
+✅ Production-ready with extensive documentation
 ```
 
 ---
 
 ## Features
 
-### **🎯 Primary Generation Tool**
-- **`generate_intent_graph`** - Generate complete intent graph from orchestration card
-  - Input: Orchestration card with user request, available resources, constraints, context
-  - Output: Fully-formed intent graph with nodes, edges, and metadata
-  - **NEW in v2.1:** Flexible generation modes (`delegate_to_caller` or `use_configured_api`)
-  - **NEW in v2.1:** System-configurable prompts for custom workflows
-  - **NEW in v2.1:** Direct memory integration with `store_in_memory` option
-  - Optional: Include artifacts (reasoning, alternatives, optimizations)
-  - Powered by: Any OpenAI-compatible LLM (Writer Palmyra, Claude, OpenAI, custom)
+### **🎯 Tool 1: generate_intent_graph**
+Generate complete intent graph from orchestration card using AI
+- Input: Orchestration card with user request, available resources, constraints, context
+- Output: Fully-formed intent graph with nodes, edges, and metadata
+- **NEW in v2.1:** Flexible generation modes (`delegate_to_caller` or `use_configured_api`)
+- **NEW in v2.1:** System-configurable prompts for custom workflows
+- **NEW in v2.1:** Direct memory integration with `store_in_memory` option
+- Optional: Include artifacts (reasoning, alternatives, optimizations)
+- Powered by: Any OpenAI-compatible LLM (Writer Palmyra, Claude, OpenAI, custom)
 
-### **✅ Validation & Analysis**
-- **`validate_graph`** - Comprehensive validation with detailed report
-  - Checks graph structure, node connectivity, data flow
-  - Identifies cycles, unreachable nodes, missing dependencies
-  - Returns actionable error messages
+### **✅ Tool 2: validate_graph**
+Comprehensive validation with detailed report
+- Checks: Unique IDs, valid references, DAG structure, reachability
+- Identifies: Cycles, unreachable nodes, missing dependencies
+- Returns: Detailed validation report with actionable messages
 
-- **`analyze_graph`** - Deep analysis of graph metrics
-  - Complexity metrics (nodes, edges, depth, branching factor)
-  - Parallel execution opportunities
-  - Critical path calculation
-  - Bottleneck identification
-  - **NEW in v2.1:** Supports `graph_id` for memory-cached graphs
+### **📊 Tool 3: analyze_graph**
+Deep analysis of graph metrics and optimization opportunities
+- Complexity metrics (nodes, edges, depth, branching factor, cyclomatic complexity)
+- Parallel execution opportunities with potential savings
+- Critical path calculation with duration estimates
+- Bottleneck identification (long durations, high fan-in/out)
+- **NEW in v2.2:** Supports `graph_id` for memory-cached graphs
 
-### **⚡ Optimization**
-- **`optimize_graph`** - Apply AI-driven optimizations
-  - Parallelize independent operations
-  - Reduce latency through restructuring
-  - Minimize costs by consolidating nodes
-  - Improve reliability with fallback paths
-  - **NEW in v2.1:** Supports `graph_id` for memory-cached graphs
+### **⚡ Tool 4: optimize_graph**
+Apply intelligent optimizations to improve performance
+- Parallelize independent operations
+- Reduce latency through restructuring
+- Minimize costs by consolidating operations
+- Improve reliability with retry policies and fallbacks
+- **NEW in v2.2:** Supports `graph_id` for memory-cached graphs
 
-### **📤 Export & Visualization**
-- **`export_graph`** - Export in multiple formats
-  - JSON (standard format)
-  - YAML (human-readable)
-  - DOT (Graphviz)
-  - Mermaid (diagrams)
-  - **NEW in v2.1:** Supports `graph_id` for memory-cached graphs
+### **📤 Tool 5: export_graph**
+Export graphs in multiple formats
+- JSON (standard format)
+- YAML (human-readable)
+- DOT (GraphViz visualization)
+- Mermaid (diagram markdown)
+- **NEW in v2.2:** Supports `graph_id` for memory-cached graphs
 
-- **`visualize_graph`** - Generate rich Mermaid diagrams
-  - Top-bottom or left-right layouts
-  - Multiple style presets (basic, detailed, complete)
-  - Shows agent types with icons and colors
-  - Displays instructions, tools, and execution dependencies
-  - Optional metadata display
-  - **NEW in v2.1:** Supports `graph_id` for memory-cached graphs
-  - **NEW in v2.1:** Enhanced styling with modern shapes and colors
+### **🎨 Tool 6: visualize_graph**
+Generate rich Mermaid diagrams with full metadata
+- Color-coded nodes by agent type (LLM, API, Tool, Validator, etc.)
+- Shape variation by node type (entry, exit, decision, aggregation)
+- Edge styling by type (sequential, parallel, conditional, error, retry)
+- Optional: Instructions, MCP tools, external tools, conditions, metadata
+- Style presets: basic, detailed (default), complete
+- Direction options: TB (top-bottom) or LR (left-right)
+- **NEW in v2.2:** Comprehensive visualization with all graph details
+- **NEW in v2.2:** Supports `graph_id` for memory-cached graphs
 
-### **🔍 Artifacts & Debugging**
-- **`generate_artifacts`** - Create debugging outputs
-  - Reasoning: How the graph was constructed
-  - Alternatives: Other designs considered
-  - Optimizations: Applied improvements
-  - Execution trace: Step-by-step generation log
-  - Debug info: Internal state and decisions
+### **🔍 Tool 7: generate_artifacts**
+Generate debugging and logging artifacts
+- Reasoning: Step-by-step explanation of graph design
+- Alternatives: Other approaches considered
+- Optimizations: Applied improvements and recommendations
+- Execution traces (optional)
+- Debug info (optional)
 
 ---
 
@@ -164,7 +148,7 @@ npm install -g intent-graph-mcp-server
 
 ```bash
 # Clone the repository
-git clone https://github.com/spoyner/intent-graph-generator.git
+git clone https://github.com/seanpoyner/intent-graph-generator.git
 cd intent-graph-generator
 
 # Install dependencies
@@ -573,29 +557,43 @@ console.log(artifacts);
 
 ## Architecture
 
+### Dual Transport Support
+- **stdio Transport** - For Cursor, Claude Desktop, local MCP clients
+  - Entry point: `build/index.js`
+  - Start: `npm start` or `node build/index.js`
+- **HTTP Server** - For Copilot Studio, web integrations, remote access
+  - Entry point: `build/http-server.js`
+  - Start: `npm run start:http` or `PORT=3001 node build/http-server.js`
+  - Endpoints: `/health`, `/mcp` (JSON-RPC 2.0)
+  - CORS enabled for cross-origin requests
+  - **NEW in v2.2:** Production-tested HTTP server
+
 ### Stateless Design
 - No persistent storage - graphs generated on demand
 - Each tool call is independent
 - Easy to scale horizontally
-- No state management complexity
+- Optional memory integration via MCP memory server
 
 ### LLM-Powered Generation
-- Uses Writer Palmyra for intelligent graph construction
+- Supports any OpenAI-compatible API (Writer Palmyra, Claude, OpenAI, custom)
 - Context-aware node/edge selection
 - Automatic optimization during generation
-- Learns from orchestration card constraints
+- Flexible generation modes (delegate to caller or use configured API)
+- System-configurable prompts for custom workflows
 
-### Type-Safe
-- Full TypeScript implementation
-- Comprehensive type definitions
+### Type-Safe & Production-Ready
+- Full TypeScript implementation with comprehensive types
+- 30+ comprehensive tests (100% passing)
 - Runtime schema validation
 - No `any` types
+- Build size: 50.4 KB compressed, 238.4 KB unpacked
 
 ### Error Handling
 - All tools return `{ success: true, result }` or `{ success: false, error }`
 - Detailed error messages with codes
 - Actionable error details
 - Proper MCP error formatting
+- Comprehensive logging for debugging
 
 ---
 
@@ -688,20 +686,32 @@ See [ARCHITECTURE_V2.md](ARCHITECTURE_V2.md) for complete API documentation.
 ```
 intent-graph-generator/
 ├── src/
-│   ├── index.ts          # MCP server entry point
-│   ├── types.ts          # TypeScript type definitions
-│   ├── utils.ts          # Utility functions (validation, analysis)
+│   ├── index.ts              # MCP server (stdio transport)
+│   ├── http-server.ts        # HTTP server (Copilot Studio)
+│   ├── types.ts              # TypeScript type definitions
+│   ├── utils.ts              # Validation & analysis utilities
 │   ├── llm/
-│   │   └── client.ts     # Writer Palmyra client
-│   └── tools/
-│       └── generate.ts   # Primary generation tool
+│   │   └── client.ts         # Universal LLM client
+│   ├── tools/
+│   │   ├── generate.ts       # Tool 1: generate_intent_graph
+│   │   └── helpers.ts        # Tools 2-7: validate, analyze, optimize, export, visualize, artifacts
+│   ├── utils/
+│   │   ├── memory.ts         # Memory integration
+│   │   └── memory-client.ts  # MCP memory client
+│   └── test-v2.ts            # Comprehensive test suite (30+ tests)
 ├── schemas/
 │   └── orchestration-card-schema.json
 ├── examples/
 │   └── orchestration-cards/
 │       └── ecommerce-order-processing.json
-├── build/                # Compiled JavaScript
-├── ARCHITECTURE_V2.md    # Detailed architecture docs
+├── test-prompts/             # Example test scenarios
+├── build/                    # Compiled JavaScript
+├── ARCHITECTURE_V2.md        # Detailed architecture docs
+├── MEMORY-CACHING.md         # Memory integration guide
+├── VISUALIZATION-QUICK-START.md  # Visualization guide
+├── SYSTEM-CONFIGURABLE-GENERATION.md  # Custom prompts
+├── TROUBLESHOOTING.md        # Common issues & solutions
+├── DOCUMENTATION-INDEX.md    # Complete docs index
 ├── package.json
 ├── tsconfig.json
 └── README.md
