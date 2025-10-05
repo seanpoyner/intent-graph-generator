@@ -258,7 +258,7 @@ async function handleMCPRequest(mcpRequest: any): Promise<any> {
 app.get('/health', (_req: Request, res: Response) => {
   res.json({
     status: 'healthy',
-    version: '2.0.0',
+    version: '2.1.0',
     server: 'IntentGraph MCP Server',
     transport: 'streamable',
     tools: TOOL_DEFINITIONS.length

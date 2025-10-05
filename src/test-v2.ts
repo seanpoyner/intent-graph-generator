@@ -327,64 +327,662 @@ async function main(): Promise<void> {
   }
 
   // ========================================================================
-  // Tool 2: validate_graph (placeholder - to be implemented)
+  // Tool 2: validate_graph
   // ========================================================================
   
   log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
   log('Tool 2: validate_graph', 'info');
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
 
-  skipTest('validate_graph tests', 'Tool implementation pending');
+  await runTest('validate_graph: Valid complete graph', async () => {
+    // First generate a graph
+    if (!hasApiKey) {
+      log('  ⊘ Skipping - requires LLM API', 'warn');
+      testsSkipped++;
+      return;
+    }
+
+    const genResult = await generateIntentGraphTool({
+      orchestration_card: sampleOrchestrationCard,
+      options: { validate: false, format: 'json' }
+    });
+    
+    assert(genResult.success === true, 'Graph generation should succeed');
+    if (!genResult.success) return;
+
+    const { validateGraphTool } = await import('./tools/helpers.js');
+    const result = await validateGraphTool({
+      graph: genResult.result.intent_graph
+    });
+
+    assert(result.success === true, 'Validation should succeed');
+    if (!result.success) return;
+
+    assert(result.result.is_valid !== undefined, 'Should have is_valid field');
+    assert(result.result.checks_performed !== undefined, 'Should have checks_performed');
+    assert(Array.isArray(result.result.checks_performed), 'checks_performed should be array');
+  });
+
+  await runTest('validate_graph: Invalid graph structure', async () => {
+    const { validateGraphTool } = await import('./tools/helpers.js');
+    const invalidGraph: any = {
+      nodes: [],
+      edges: [{ edge_id: 'edge1', from_node: 'n1', to_node: 'n2', edge_type: 'sequential' }]
+      // Edges reference non-existent nodes
+    };
+
+    const result = await validateGraphTool({ graph: invalidGraph });
+
+    // It should still process but may indicate validation issues
+    assert(result.success === true, 'Should handle invalid graph gracefully');
+  });
 
   // ========================================================================
-  // Tool 3: analyze_graph (placeholder - to be implemented)
+  // Tool 3: analyze_graph
   // ========================================================================
   
   log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
   log('Tool 3: analyze_graph', 'info');
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
 
-  skipTest('analyze_graph tests', 'Tool implementation pending');
+  await runTest('analyze_graph: Complexity analysis', async () => {
+    if (!hasApiKey) {
+      log('  ⊘ Skipping - requires LLM API', 'warn');
+      testsSkipped++;
+      return;
+    }
+
+    const genResult = await generateIntentGraphTool({
+      orchestration_card: sampleOrchestrationCard,
+      options: { validate: false, format: 'json' }
+    });
+    
+    assert(genResult.success === true, 'Graph generation should succeed');
+    if (!genResult.success) return;
+
+    const { analyzeGraphTool } = await import('./tools/helpers.js');
+    const result = await analyzeGraphTool({
+      graph: genResult.result.intent_graph,
+      analysis_types: ['complexity']
+    });
+
+    assert(result.success === true, 'Analysis should succeed');
+    if (!result.success) return;
+
+    assert(result.result.complexity !== undefined, 'Should have complexity metrics');
+    if (result.result.complexity) {
+      assert(result.result.complexity.node_count > 0, 'Should have node count');
+      assert(result.result.complexity.edge_count >= 0, 'Should have edge count');
+    }
+  });
+
+  await runTest('analyze_graph: Parallel opportunities', async () => {
+    if (!hasApiKey) {
+      log('  ⊘ Skipping - requires LLM API', 'warn');
+      testsSkipped++;
+      return;
+    }
+
+    const genResult = await generateIntentGraphTool({
+      orchestration_card: sampleOrchestrationCard,
+      options: { validate: false, format: 'json' }
+    });
+    
+    assert(genResult.success === true, 'Graph generation should succeed');
+    if (!genResult.success) return;
+
+    const { analyzeGraphTool } = await import('./tools/helpers.js');
+    const result = await analyzeGraphTool({
+      graph: genResult.result.intent_graph,
+      analysis_types: ['parallel_opportunities']
+    });
+
+    assert(result.success === true, 'Analysis should succeed');
+    if (!result.success) return;
+
+    assert(result.result.parallel_opportunities !== undefined, 'Should have parallel opportunities');
+    assert(Array.isArray(result.result.parallel_opportunities), 'Should be array');
+  });
+
+  await runTest('analyze_graph: Critical path', async () => {
+    if (!hasApiKey) {
+      log('  ⊘ Skipping - requires LLM API', 'warn');
+      testsSkipped++;
+      return;
+    }
+
+    const genResult = await generateIntentGraphTool({
+      orchestration_card: sampleOrchestrationCard,
+      options: { validate: false, format: 'json' }
+    });
+    
+    assert(genResult.success === true, 'Graph generation should succeed');
+    if (!genResult.success) return;
+
+    const { analyzeGraphTool } = await import('./tools/helpers.js');
+    const result = await analyzeGraphTool({
+      graph: genResult.result.intent_graph,
+      analysis_types: ['critical_path']
+    });
+
+    assert(result.success === true, 'Analysis should succeed');
+    if (!result.success) return;
+
+    assert(result.result.critical_path !== undefined, 'Should have critical path');
+    if (result.result.critical_path) {
+      assert(result.result.critical_path.path !== undefined, 'Should have path array');
+      assert(result.result.critical_path.estimated_duration_ms !== undefined, 'Should have duration');
+    }
+  });
+
+  await runTest('analyze_graph: All analysis types', async () => {
+    if (!hasApiKey) {
+      log('  ⊘ Skipping - requires LLM API', 'warn');
+      testsSkipped++;
+      return;
+    }
+
+    const genResult = await generateIntentGraphTool({
+      orchestration_card: sampleOrchestrationCard,
+      options: { validate: false, format: 'json' }
+    });
+    
+    assert(genResult.success === true, 'Graph generation should succeed');
+    if (!genResult.success) return;
+
+    const { analyzeGraphTool } = await import('./tools/helpers.js');
+    const result = await analyzeGraphTool({
+      graph: genResult.result.intent_graph,
+      analysis_types: ['complexity', 'parallel_opportunities', 'critical_path', 'bottlenecks']
+    });
+
+    assert(result.success === true, 'Analysis should succeed');
+    if (!result.success) return;
+
+    assert(result.result.complexity !== undefined, 'Should have complexity');
+    assert(result.result.parallel_opportunities !== undefined, 'Should have parallel opportunities');
+    assert(result.result.critical_path !== undefined, 'Should have critical path');
+    assert(result.result.bottlenecks !== undefined, 'Should have bottlenecks');
+  });
 
   // ========================================================================
-  // Tool 4: optimize_graph (placeholder - to be implemented)
+  // Tool 4: optimize_graph
   // ========================================================================
   
   log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
   log('Tool 4: optimize_graph', 'info');
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
 
-  skipTest('optimize_graph tests', 'Tool implementation pending');
+  await runTest('optimize_graph: Parallelization strategy', async () => {
+    if (!hasApiKey) {
+      log('  ⊘ Skipping - requires LLM API', 'warn');
+      testsSkipped++;
+      return;
+    }
+
+    const genResult = await generateIntentGraphTool({
+      orchestration_card: sampleOrchestrationCard,
+      options: { validate: false, format: 'json' }
+    });
+    
+    assert(genResult.success === true, 'Graph generation should succeed');
+    if (!genResult.success) return;
+
+    const { optimizeGraphTool } = await import('./tools/helpers.js');
+    const result = await optimizeGraphTool({
+      graph: genResult.result.intent_graph,
+      optimization_strategies: ['parallelize']
+    });
+
+    assert(result.success === true, 'Optimization should succeed');
+    if (!result.success) return;
+
+    assert(result.result.optimized_graph !== undefined, 'Should have optimized graph');
+    assert(result.result.optimizations_applied !== undefined, 'Should have optimizations list');
+    assert(Array.isArray(result.result.optimizations_applied), 'optimizations_applied should be array');
+  });
+
+  await runTest('optimize_graph: Reliability improvements', async () => {
+    if (!hasApiKey) {
+      log('  ⊘ Skipping - requires LLM API', 'warn');
+      testsSkipped++;
+      return;
+    }
+
+    const genResult = await generateIntentGraphTool({
+      orchestration_card: sampleOrchestrationCard,
+      options: { validate: false, format: 'json' }
+    });
+    
+    assert(genResult.success === true, 'Graph generation should succeed');
+    if (!genResult.success) return;
+
+    const { optimizeGraphTool } = await import('./tools/helpers.js');
+    const result = await optimizeGraphTool({
+      graph: genResult.result.intent_graph,
+      optimization_strategies: ['improve_reliability']
+    });
+
+    assert(result.success === true, 'Optimization should succeed');
+    if (!result.success) return;
+
+    // Check that retry policies were added
+    const optimizedGraph = result.result.optimized_graph;
+    const nodesWithRetry = optimizedGraph.nodes.filter(n => n.configuration?.retry_policy);
+    assert(nodesWithRetry.length > 0, 'Should have added retry policies');
+  });
+
+  await runTest('optimize_graph: Multiple strategies', async () => {
+    if (!hasApiKey) {
+      log('  ⊘ Skipping - requires LLM API', 'warn');
+      testsSkipped++;
+      return;
+    }
+
+    const genResult = await generateIntentGraphTool({
+      orchestration_card: sampleOrchestrationCard,
+      options: { validate: false, format: 'json' }
+    });
+    
+    assert(genResult.success === true, 'Graph generation should succeed');
+    if (!genResult.success) return;
+
+    const { optimizeGraphTool } = await import('./tools/helpers.js');
+    const result = await optimizeGraphTool({
+      graph: genResult.result.intent_graph,
+      optimization_strategies: ['parallelize', 'reduce_latency', 'minimize_cost', 'improve_reliability']
+    });
+
+    assert(result.success === true, 'Optimization should succeed');
+    if (!result.success) return;
+
+    assert(result.result.optimizations_applied.length >= 3, 'Should have multiple optimizations');
+    assert(result.result.improvements !== undefined, 'Should have improvements metrics');
+  });
 
   // ========================================================================
-  // Tool 5: export_graph (placeholder - to be implemented)
+  // Tool 5: export_graph
   // ========================================================================
   
   log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
   log('Tool 5: export_graph', 'info');
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
 
-  skipTest('export_graph tests', 'Tool implementation pending');
+  await runTest('export_graph: JSON format', async () => {
+    if (!hasApiKey) {
+      log('  ⊘ Skipping - requires LLM API', 'warn');
+      testsSkipped++;
+      return;
+    }
+
+    const genResult = await generateIntentGraphTool({
+      orchestration_card: minimalOrchestrationCard,
+      options: { validate: false, format: 'json' }
+    });
+    
+    assert(genResult.success === true, 'Graph generation should succeed');
+    if (!genResult.success) return;
+
+    const { exportGraphTool } = await import('./tools/helpers.js');
+    const result = await exportGraphTool({
+      graph: genResult.result.intent_graph,
+      format: 'json'
+    });
+
+    assert(result.success === true, 'Export should succeed');
+    if (!result.success) return;
+
+    assert(result.result.exported !== undefined, 'Should have exported string');
+    assert(result.result.format === 'json', 'Format should be json');
+    
+    // Verify it's valid JSON
+    const parsed = JSON.parse(result.result.exported);
+    assert(parsed.nodes !== undefined, 'Exported JSON should have nodes');
+  });
+
+  await runTest('export_graph: YAML format', async () => {
+    if (!hasApiKey) {
+      log('  ⊘ Skipping - requires LLM API', 'warn');
+      testsSkipped++;
+      return;
+    }
+
+    const genResult = await generateIntentGraphTool({
+      orchestration_card: minimalOrchestrationCard,
+      options: { validate: false, format: 'json' }
+    });
+    
+    assert(genResult.success === true, 'Graph generation should succeed');
+    if (!genResult.success) return;
+
+    const { exportGraphTool } = await import('./tools/helpers.js');
+    const result = await exportGraphTool({
+      graph: genResult.result.intent_graph,
+      format: 'yaml'
+    });
+
+    assert(result.success === true, 'Export should succeed');
+    if (!result.success) return;
+
+    assert(result.result.format === 'yaml', 'Format should be yaml');
+    assert(result.result.exported.includes('nodes:'), 'YAML should contain nodes');
+  });
+
+  await runTest('export_graph: DOT format', async () => {
+    if (!hasApiKey) {
+      log('  ⊘ Skipping - requires LLM API', 'warn');
+      testsSkipped++;
+      return;
+    }
+
+    const genResult = await generateIntentGraphTool({
+      orchestration_card: minimalOrchestrationCard,
+      options: { validate: false, format: 'json' }
+    });
+    
+    assert(genResult.success === true, 'Graph generation should succeed');
+    if (!genResult.success) return;
+
+    const { exportGraphTool } = await import('./tools/helpers.js');
+    const result = await exportGraphTool({
+      graph: genResult.result.intent_graph,
+      format: 'dot'
+    });
+
+    assert(result.success === true, 'Export should succeed');
+    if (!result.success) return;
+
+    assert(result.result.format === 'dot', 'Format should be dot');
+    assert(result.result.exported.includes('digraph'), 'DOT should contain digraph');
+  });
+
+  await runTest('export_graph: Mermaid format', async () => {
+    if (!hasApiKey) {
+      log('  ⊘ Skipping - requires LLM API', 'warn');
+      testsSkipped++;
+      return;
+    }
+
+    const genResult = await generateIntentGraphTool({
+      orchestration_card: minimalOrchestrationCard,
+      options: { validate: false, format: 'json' }
+    });
+    
+    assert(genResult.success === true, 'Graph generation should succeed');
+    if (!genResult.success) return;
+
+    const { exportGraphTool } = await import('./tools/helpers.js');
+    const result = await exportGraphTool({
+      graph: genResult.result.intent_graph,
+      format: 'mermaid'
+    });
+
+    assert(result.success === true, 'Export should succeed');
+    if (!result.success) return;
+
+    assert(result.result.format === 'mermaid', 'Format should be mermaid');
+    assert(result.result.exported.includes('graph'), 'Mermaid should contain graph');
+  });
 
   // ========================================================================
-  // Tool 6: visualize_graph (placeholder - to be implemented)
+  // Tool 6: visualize_graph
   // ========================================================================
   
   log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
   log('Tool 6: visualize_graph', 'info');
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
 
-  skipTest('visualize_graph tests', 'Tool implementation pending');
+  await runTest('visualize_graph: Basic visualization', async () => {
+    if (!hasApiKey) {
+      log('  ⊘ Skipping - requires LLM API', 'warn');
+      testsSkipped++;
+      return;
+    }
+
+    const genResult = await generateIntentGraphTool({
+      orchestration_card: minimalOrchestrationCard,
+      options: { validate: false, format: 'json' }
+    });
+    
+    assert(genResult.success === true, 'Graph generation should succeed');
+    if (!genResult.success) return;
+
+    const { visualizeGraphTool } = await import('./tools/helpers.js');
+    const result = await visualizeGraphTool({
+      graph: genResult.result.intent_graph
+    });
+
+    assert(result.success === true, 'Visualization should succeed');
+    if (!result.success) return;
+
+    assert(result.result.mermaid !== undefined, 'Should have mermaid diagram');
+    assert(result.result.node_count > 0, 'Should have node count');
+    assert(result.result.mermaid.includes('graph'), 'Mermaid should contain graph');
+  });
+
+  await runTest('visualize_graph: With metadata', async () => {
+    if (!hasApiKey) {
+      log('  ⊘ Skipping - requires LLM API', 'warn');
+      testsSkipped++;
+      return;
+    }
+
+    const genResult = await generateIntentGraphTool({
+      orchestration_card: sampleOrchestrationCard,
+      options: { validate: false, format: 'json' }
+    });
+    
+    assert(genResult.success === true, 'Graph generation should succeed');
+    if (!genResult.success) return;
+
+    const { visualizeGraphTool } = await import('./tools/helpers.js');
+    const result = await visualizeGraphTool({
+      graph: genResult.result.intent_graph,
+      options: { include_metadata: true }
+    });
+
+    assert(result.success === true, 'Visualization should succeed');
+    if (!result.success) return;
+
+    assert(result.result.mermaid.includes('%%'), 'Should include metadata comments');
+  });
+
+  await runTest('visualize_graph: Different directions', async () => {
+    if (!hasApiKey) {
+      log('  ⊘ Skipping - requires LLM API', 'warn');
+      testsSkipped++;
+      return;
+    }
+
+    const genResult = await generateIntentGraphTool({
+      orchestration_card: minimalOrchestrationCard,
+      options: { validate: false, format: 'json' }
+    });
+    
+    assert(genResult.success === true, 'Graph generation should succeed');
+    if (!genResult.success) return;
+
+    const { visualizeGraphTool } = await import('./tools/helpers.js');
+    
+    // Test TB direction
+    const tbResult = await visualizeGraphTool({
+      graph: genResult.result.intent_graph,
+      options: { direction: 'TB' }
+    });
+    assert(tbResult.success === true, 'TB visualization should succeed');
+    if (tbResult.success) {
+      assert(tbResult.result.mermaid.includes('TB'), 'Should use TB direction');
+    }
+
+    // Test LR direction
+    const lrResult = await visualizeGraphTool({
+      graph: genResult.result.intent_graph,
+      options: { direction: 'LR' }
+    });
+    assert(lrResult.success === true, 'LR visualization should succeed');
+    if (lrResult.success) {
+      assert(lrResult.result.mermaid.includes('LR'), 'Should use LR direction');
+    }
+  });
+
+  await runTest('visualize_graph: With instructions summary', async () => {
+    if (!hasApiKey) {
+      log('  ⊘ Skipping - requires LLM API', 'warn');
+      testsSkipped++;
+      return;
+    }
+
+    const genResult = await generateIntentGraphTool({
+      orchestration_card: sampleOrchestrationCard,
+      options: { validate: false, format: 'json' }
+    });
+    
+    assert(genResult.success === true, 'Graph generation should succeed');
+    if (!genResult.success) return;
+
+    const { visualizeGraphTool } = await import('./tools/helpers.js');
+    const result = await visualizeGraphTool({
+      graph: genResult.result.intent_graph,
+      options: { 
+        include_instructions: true,
+        include_tools: true,
+        include_conditions: true 
+      }
+    });
+
+    assert(result.success === true, 'Visualization should succeed');
+    if (!result.success) return;
+
+    assert(result.result.instructions_summary !== undefined, 'Should have instructions summary');
+  });
 
   // ========================================================================
-  // Tool 7: generate_artifacts (placeholder - to be implemented)
+  // Tool 7: generate_artifacts
   // ========================================================================
   
   log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
   log('Tool 7: generate_artifacts', 'info');
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
 
-  skipTest('generate_artifacts tests', 'Tool implementation pending');
+  await runTest('generate_artifacts: Reasoning artifact', async () => {
+    if (!hasApiKey) {
+      log('  ⊘ Skipping - requires LLM API', 'warn');
+      testsSkipped++;
+      return;
+    }
+
+    const genResult = await generateIntentGraphTool({
+      orchestration_card: sampleOrchestrationCard,
+      options: { validate: false, format: 'json' }
+    });
+    
+    assert(genResult.success === true, 'Graph generation should succeed');
+    if (!genResult.success) return;
+
+    const { generateArtifactsTool } = await import('./tools/helpers.js');
+    const result = await generateArtifactsTool({
+      graph: genResult.result.intent_graph,
+      orchestration_card: sampleOrchestrationCard,
+      artifact_types: ['reasoning']
+    });
+
+    assert(result.success === true, 'Artifact generation should succeed');
+    if (!result.success) return;
+
+    assert(result.result.reasoning !== undefined, 'Should have reasoning artifact');
+    if (result.result.reasoning) {
+      assert(typeof result.result.reasoning === 'string', 'Reasoning should be string');
+      assert(result.result.reasoning.length > 0, 'Reasoning should not be empty');
+    }
+  });
+
+  await runTest('generate_artifacts: Alternatives artifact', async () => {
+    if (!hasApiKey) {
+      log('  ⊘ Skipping - requires LLM API', 'warn');
+      testsSkipped++;
+      return;
+    }
+
+    const genResult = await generateIntentGraphTool({
+      orchestration_card: sampleOrchestrationCard,
+      options: { validate: false, format: 'json' }
+    });
+    
+    assert(genResult.success === true, 'Graph generation should succeed');
+    if (!genResult.success) return;
+
+    const { generateArtifactsTool } = await import('./tools/helpers.js');
+    const result = await generateArtifactsTool({
+      graph: genResult.result.intent_graph,
+      orchestration_card: sampleOrchestrationCard,
+      artifact_types: ['alternatives']
+    });
+
+    assert(result.success === true, 'Artifact generation should succeed');
+    if (!result.success) return;
+
+    assert(result.result.alternatives !== undefined, 'Should have alternatives artifact');
+    assert(Array.isArray(result.result.alternatives), 'Alternatives should be array');
+  });
+
+  await runTest('generate_artifacts: Optimizations artifact', async () => {
+    if (!hasApiKey) {
+      log('  ⊘ Skipping - requires LLM API', 'warn');
+      testsSkipped++;
+      return;
+    }
+
+    const genResult = await generateIntentGraphTool({
+      orchestration_card: sampleOrchestrationCard,
+      options: { validate: false, format: 'json' }
+    });
+    
+    assert(genResult.success === true, 'Graph generation should succeed');
+    if (!genResult.success) return;
+
+    const { generateArtifactsTool } = await import('./tools/helpers.js');
+    const result = await generateArtifactsTool({
+      graph: genResult.result.intent_graph,
+      orchestration_card: sampleOrchestrationCard,
+      artifact_types: ['optimizations']
+    });
+
+    assert(result.success === true, 'Artifact generation should succeed');
+    if (!result.success) return;
+
+    assert(result.result.optimizations !== undefined, 'Should have optimizations artifact');
+    assert(Array.isArray(result.result.optimizations), 'Optimizations should be array');
+  });
+
+  await runTest('generate_artifacts: All artifact types', async () => {
+    if (!hasApiKey) {
+      log('  ⊘ Skipping - requires LLM API', 'warn');
+      testsSkipped++;
+      return;
+    }
+
+    const genResult = await generateIntentGraphTool({
+      orchestration_card: sampleOrchestrationCard,
+      options: { validate: false, format: 'json' }
+    });
+    
+    assert(genResult.success === true, 'Graph generation should succeed');
+    if (!genResult.success) return;
+
+    const { generateArtifactsTool } = await import('./tools/helpers.js');
+    const result = await generateArtifactsTool({
+      graph: genResult.result.intent_graph,
+      orchestration_card: sampleOrchestrationCard,
+      artifact_types: ['reasoning', 'alternatives', 'optimizations']
+    });
+
+    assert(result.success === true, 'Artifact generation should succeed');
+    if (!result.success) return;
+
+    assert(result.result.reasoning !== undefined, 'Should have reasoning');
+    assert(result.result.alternatives !== undefined, 'Should have alternatives');
+    assert(result.result.optimizations !== undefined, 'Should have optimizations');
+  });
 
   // ========================================================================
   // Summary

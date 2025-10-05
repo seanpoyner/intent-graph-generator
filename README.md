@@ -7,7 +7,7 @@
 **Universal LLM-powered MCP server for automated Intent Graph generation**. Supports Writer Palmyra, Claude, OpenAI, and any OpenAI-compatible API. Transform orchestration requirements into executable agent workflows with AI-assisted graph construction.
 
 **Author:** Sean Poyner  
-**Version:** 2.0.0  
+**Version:** 2.1.0  
 **License:** MIT  
 **Contact:** sean.poyner@pm.me
 
@@ -55,7 +55,7 @@ export LLM_MODEL="palmyra-x5"  # or gpt-4, claude-3-5-sonnet-20241022, etc.
 
 ## Overview
 
-The IntentGraph MCP Server v2.0 is designed for **orchestration agents** that need to build agent workflows. The orchestration agent provides context in an **Orchestration Card**, and Palmyra generates the complete intent graph.
+The IntentGraph MCP Server v2.1 is designed for **orchestration agents** that need to build agent workflows. The orchestration agent provides context in an **Orchestration Card**, and an LLM generates the complete intent graph with intelligent optimizations.
 
 **Primary Use Cases:**
 - **Microsoft Copilot Studio** - Build complex agent orchestrations
@@ -69,11 +69,14 @@ The IntentGraph MCP Server v2.0 is designed for **orchestration agents** that ne
 
 ## Why Use This?
 
-### IntentGraph v2.0 (AI-Powered Generation)
+### IntentGraph v2.1 (AI-Powered with Advanced Features)
 ```
 ✅ Single tool call generates complete graph
 ✅ AI understands context and constraints
 ✅ Automatically optimized structure
+✅ Flexible LLM generation modes (delegate or use configured API)
+✅ System-configurable prompts for custom workflows
+✅ Direct memory integration for state persistence
 ✅ Fast, intelligent, reliable
 ✅ Artifacts for debugging and logging
 ```
@@ -86,8 +89,11 @@ The IntentGraph MCP Server v2.0 is designed for **orchestration agents** that ne
 - **`generate_intent_graph`** - Generate complete intent graph from orchestration card
   - Input: Orchestration card with user request, available resources, constraints, context
   - Output: Fully-formed intent graph with nodes, edges, and metadata
+  - **NEW in v2.1:** Flexible generation modes (`delegate_to_caller` or `use_configured_api`)
+  - **NEW in v2.1:** System-configurable prompts for custom workflows
+  - **NEW in v2.1:** Direct memory integration with `store_in_memory` option
   - Optional: Include artifacts (reasoning, alternatives, optimizations)
-  - Powered by: Writer Palmyra LLM
+  - Powered by: Any OpenAI-compatible LLM (Writer Palmyra, Claude, OpenAI, custom)
 
 ### **✅ Validation & Analysis**
 - **`validate_graph`** - Comprehensive validation with detailed report
@@ -100,6 +106,7 @@ The IntentGraph MCP Server v2.0 is designed for **orchestration agents** that ne
   - Parallel execution opportunities
   - Critical path calculation
   - Bottleneck identification
+  - **NEW in v2.1:** Supports `graph_id` for memory-cached graphs
 
 ### **⚡ Optimization**
 - **`optimize_graph`** - Apply AI-driven optimizations
@@ -107,6 +114,7 @@ The IntentGraph MCP Server v2.0 is designed for **orchestration agents** that ne
   - Reduce latency through restructuring
   - Minimize costs by consolidating nodes
   - Improve reliability with fallback paths
+  - **NEW in v2.1:** Supports `graph_id` for memory-cached graphs
 
 ### **📤 Export & Visualization**
 - **`export_graph`** - Export in multiple formats
@@ -114,11 +122,16 @@ The IntentGraph MCP Server v2.0 is designed for **orchestration agents** that ne
   - YAML (human-readable)
   - DOT (Graphviz)
   - Mermaid (diagrams)
+  - **NEW in v2.1:** Supports `graph_id` for memory-cached graphs
 
-- **`visualize_graph`** - Generate Mermaid diagrams
+- **`visualize_graph`** - Generate rich Mermaid diagrams
   - Top-bottom or left-right layouts
+  - Multiple style presets (basic, detailed, complete)
+  - Shows agent types with icons and colors
+  - Displays instructions, tools, and execution dependencies
   - Optional metadata display
-  - Ready for rendering
+  - **NEW in v2.1:** Supports `graph_id` for memory-cached graphs
+  - **NEW in v2.1:** Enhanced styling with modern shapes and colors
 
 ### **🔍 Artifacts & Debugging**
 - **`generate_artifacts`** - Create debugging outputs
@@ -212,6 +225,26 @@ export LLM_API_KEY="your-custom-key"
 export LLM_MODEL="your-model-name"
 export LLM_BASE_URL="https://your-custom-endpoint.com"
 ```
+
+### Memory Server Configuration (Optional - for v2.1 caching features)
+
+To enable automatic memory caching (`store_in_memory` option), the server needs access to a memory MCP server:
+
+```bash
+# Default (uses @modelcontextprotocol/server-memory via npx)
+export MEMORY_MCP_COMMAND="npx"
+export MEMORY_MCP_ARGS="-y,@modelcontextprotocol/server-memory"
+
+# Or custom memory server
+export MEMORY_MCP_COMMAND="node"
+export MEMORY_MCP_ARGS="/path/to/your/memory-server.js"
+```
+
+**Note:** If no memory server is configured, the server will still work normally but `store_in_memory` and `graph_id` features will be unavailable.
+
+**Requirements:**
+- Memory server must support `create_entities` and `open_nodes` tools
+- Compatible with [@modelcontextprotocol/server-memory](https://github.com/modelcontextprotocol/servers/tree/main/src/memory)
 
 ### For Microsoft Copilot Studio
 
@@ -789,6 +822,35 @@ See [OPEN_SOURCE.md](OPEN_SOURCE.md) for detailed licensing information.
 ---
 
 ## Changelog
+
+### v2.1.0 (2025-10-04)
+- 🚀 **Flexible LLM Generation Modes**
+  - `delegate_to_caller`: Returns prompts for calling agent to use its own LLM
+  - `use_configured_api`: Server directly calls configured LLM (default)
+  - Enables cost optimization and model flexibility
+- 🎨 **System-Configurable Generation**
+  - Custom prompt templates per system
+  - Flexible output schemas
+  - Example outputs for training
+  - Agent descriptions and validation rules
+  - Makes server a "meta-orchestration tool"
+- 💾 **Direct Memory Integration** (Breaking Change)
+  - Server now directly connects to memory MCP server
+  - `store_in_memory: true` automatically stores graphs
+  - `graph_id` parameter automatically retrieves from memory
+  - No manual storage/retrieval steps required
+  - Reusable pattern for state management
+- ✨ **Enhanced Visualization**
+  - Modern styling with colors and shapes
+  - Agent type icons (🤖 LLM, 🔌 API, ✅ Validator, etc.)
+  - Multiple style presets (basic, detailed, complete)
+  - Shows instructions, tools, and execution dependencies
+  - Improved edge labels with conditions and triggers
+- 🐛 **Critical Fixes**
+  - Fixed JSON parsing for custom schema outputs
+  - Fixed markdown code block extraction
+  - Fixed schema mismatch with `system_configuration`
+  - Updated property names for consistency
 
 ### v2.0.0 (2025-10-03)
 - 🎉 **Major architectural redesign**

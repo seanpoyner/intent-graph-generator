@@ -73,6 +73,21 @@ export interface NodeMetadata {
   tags?: string[];
 }
 
+// MCP Tool Reference
+export interface McpToolReference {
+  server_name: string;
+  tool_name: string;
+  description?: string;
+  when_to_use?: string; // Guidance on when this tool should be used
+}
+
+// External Tool Reference
+export interface ExternalToolReference {
+  tool_name: string;
+  description?: string;
+  when_to_use?: string; // Guidance on when this tool should be used
+}
+
 // Intent Graph Node
 export interface IntentGraphNode {
   node_id: string;
@@ -80,6 +95,10 @@ export interface IntentGraphNode {
   agent_type?: AgentType;
   node_type: NodeType;
   purpose: string;
+  instructions?: string; // Detailed plain-language instructions for the agent
+  context?: string; // Additional context the agent needs to know
+  available_mcp_tools?: McpToolReference[]; // MCP tools this agent can use
+  available_tools?: ExternalToolReference[]; // External tools this agent can use
   inputs: Record<string, InputMapping>;
   outputs: OutputDefinition[];
   configuration?: NodeConfiguration;
@@ -356,6 +375,27 @@ export interface OrchestrationExampleScenario {
   expected_output?: Record<string, unknown>;
 }
 
+export interface SystemConfiguration {
+  system_name?: string;
+  system_description?: string;
+  system_purpose?: string;
+  output_format?: "json" | "markdown" | "mermaid" | "custom";
+  output_schema?: Record<string, unknown>; // JSON Schema for structured output
+  custom_prompt_template?: string; // Custom prompt template for the system
+  example_outputs?: Array<{
+    description: string;
+    output: Record<string, unknown> | string;
+  }>;
+  agent_descriptions?: Array<{
+    agent_name: string;
+    description: string;
+    capabilities: string[];
+    example_usage?: string;
+  }>;
+  execution_model?: "sequential" | "parallel" | "dag" | "custom";
+  validation_rules?: string[];
+}
+
 export interface OrchestrationCard {
   user_request: OrchestrationUserRequest;
   available_agents: OrchestrationAgent[];
@@ -366,14 +406,20 @@ export interface OrchestrationCard {
   preferences?: OrchestrationPreferences;
   special_requirements?: string[];
   example_scenarios?: OrchestrationExampleScenario[];
+  system_configuration?: SystemConfiguration; // NEW: System-specific configuration
 }
 
+export type GenerationMode = 'delegate_to_caller' | 'use_configured_api';
+
 export interface GenerationOptions {
+  generation_mode?: GenerationMode;
   include_artifacts?: boolean;
   artifact_types?: string[];
   format?: "json" | "yaml";
   validate?: boolean;
   optimize?: boolean;
+  store_in_memory?: boolean; // Store graph in memory MCP server for reuse
+  memory_key?: string; // Optional custom key for memory storage
 }
 
 export interface GenerationArtifacts {
