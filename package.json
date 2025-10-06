@@ -5,6 +5,9 @@
   "type": "module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
+  "bin": {
+    "intent-graph-mcp-server": "build/index.js"
+  },
   "files": [
     "build/**/*.js",
     "build/**/*.d.ts",
