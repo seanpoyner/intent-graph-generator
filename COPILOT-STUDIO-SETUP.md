@@ -334,7 +334,7 @@ The server exposes 7 MCP tools:
 
 ## **Resources**
 
-- **Full Documentation**: https://github.com/spoyner/intent-graph-generator
+- **Full Documentation**: https://github.com/seanpoyner/intent-graph-generator
 - **npm Package**: https://www.npmjs.com/package/intent-graph-mcp-server
 - **Schema**: `/schemas/orchestration-card-schema.json`
 - **Examples**: `/examples/orchestration-cards/`

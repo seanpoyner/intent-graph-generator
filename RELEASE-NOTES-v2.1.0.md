@@ -376,7 +376,7 @@ Special thanks to:
 
 ## 📞 Support
 
-- **Issues:** [GitHub Issues](https://github.com/spoyner/intent-graph-generator/issues)
+- **Issues:** [GitHub Issues](https://github.com/seanpoyner/intent-graph-generator/issues)
 - **Email:** sean.poyner@pm.me
 - **Documentation:** [README.md](./README.md)
 - **License:** MIT

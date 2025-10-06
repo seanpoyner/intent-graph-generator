@@ -55,7 +55,7 @@ Licensed under MIT License
 ```
 IntentGraph MCP Server
 Copyright (c) 2025 Sean Poyner
-https://github.com/spoyner/intent-graph-generator
+https://github.com/seanpoyner/intent-graph-generator
 Licensed under the MIT License
 ```
 
@@ -177,7 +177,7 @@ Not required, but appreciated! 🙏
 
 - **License:** [LICENSE](LICENSE)
 - **Contributing:** [CONTRIBUTING.md](CONTRIBUTING.md)
-- **Repository:** https://github.com/spoyner/intent-graph-generator
+- **Repository:** https://github.com/seanpoyner/intent-graph-generator
 - **Contact:** Sean Poyner <sean.poyner@pm.me>
 
 ---
